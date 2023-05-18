@@ -7,7 +7,7 @@ const dbPass = process.env.DB_PASS;
 
 //port config
 const port = process.env.PORT || 5000;
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 //middleware
 app.use(cors());
@@ -38,7 +38,6 @@ async function run() {
 
     // load by email
     app.get("/mytoys/:email", async (req, res) => {
-
       const toys = await toysCollection
         .find({
           sellerEmail: req.params.email,
@@ -46,13 +45,20 @@ async function run() {
         .toArray();
       res.send(toys);
     });
-
+    // load single Toy
+    app.get("/toy/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log(id);
+      const query = { _id: new ObjectId(id) };
+      const result = await toysCollection.findOne(query);
+      res.send(result);
+    });
     //Add to database
     app.post("/toys", async (req, res) => {
       const toysData = req.body;
       toysData.createAt = new Date();
       const result = await toysCollection.insertOne(toysData);
-      res.send(result)
+      res.send(result);
     });
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });

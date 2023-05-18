@@ -53,13 +53,72 @@ async function run() {
       const result = await toysCollection.findOne(query);
       res.send(result);
     });
+
     //Add to database
     app.post("/toys", async (req, res) => {
       const toysData = req.body;
+      console.log('d', toysData);
       toysData.createAt = new Date();
       const result = await toysCollection.insertOne(toysData);
       res.send(result);
     });
+
+     //update database
+    app.put("/toy/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const toyData = req.body;
+      console.log(toyData);
+      const {
+        toyName,
+        description,
+        price,
+        availableQuantity,
+        category,
+        subCategory,
+        brand,
+        material,
+        color,
+        weight,
+        countryOfOrigin,
+        pictureUrl,
+        ageRange,
+        detailDescription,
+        date,
+      } = toyData
+      const updateToyData = {
+        $set: {
+          toyName,
+          description,
+          price,
+          availableQuantity,
+          category,
+          subCategory,
+          brand,
+          material,
+          color,
+          weight,
+          countryOfOrigin,
+          pictureUrl,
+          ageRange,
+          detailDescription,
+          date,
+        }
+      }
+      console.log(updateToyData);
+      const result = await toysCollection.updateOne(filter, updateToyData, options);
+      res.send(result);
+      
+    });
+    // Delete 
+    app.delete('/toy/:id', async (req, res) => { 
+      const id = req.params.id;
+      console.log(id);
+      const query = { _id: new ObjectId(id) };
+      const result = await toysCollection.deleteOne(query)
+      res.send(result)
+     })
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(

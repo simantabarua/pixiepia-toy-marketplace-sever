@@ -29,16 +29,30 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
     const toysCollection = client.db("pixiepia").collection("toys");
+
+    //load all toys
     app.get("/toys", async (req, res) => {
       const toys = await toysCollection.find({}).toArray();
       res.send(toys);
     });
-    //Add to database
 
+    // load by email
+    app.get("/mytoys/:email", async (req, res) => {
+
+      const toys = await toysCollection
+        .find({
+          sellerEmail: req.params.email,
+        })
+        .toArray();
+      res.send(toys);
+    });
+
+    //Add to database
     app.post("/toys", async (req, res) => {
       const toysData = req.body;
       toysData.createAt = new Date();
-      console.log(toysData);
+      const result = await toysCollection.insertOne(toysData);
+      res.send(result)
     });
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });

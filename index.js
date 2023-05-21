@@ -41,11 +41,11 @@ async function run() {
       const toys = await toysCollection
         .find({
           sellerEmail: req.params.email,
-        }).limit(20)
+        })
+        .limit(20)
         .toArray();
       res.send(toys);
     });
-
 
     // load single Toy
     app.get("/toy/:id", async (req, res) => {
@@ -130,12 +130,7 @@ async function run() {
       console.log(searchText);
       const result = await toysCollection
         .find({
-          $or: [
-            { toyName: { $regex: searchText, $options: "i" } },
-            { category: { $regex: searchText, $options: "i" } },
-            { subcategory: { $regex: searchText, $options: "i" } },
-            { description: { $regex: searchText, $options: "i" } },
-          ],
+          $or: [{ toyName: { $regex: searchText, $options: "i" } }],
         })
         .toArray();
       res.send(result);
@@ -147,29 +142,38 @@ async function run() {
       const { sort } = req.query;
       let sortOption = {};
       if (sort === "asc") {
-        sortOption = { price: 1 }; 
+        sortOption = { price: 1 };
       } else if (sort === "desc") {
-        sortOption = { price: -1 }; 
+        sortOption = { price: -1 };
       }
       const result = await toysCollection
-      .find({ sellerEmail: email })
-      .sort(sortOption)
+        .find({ sellerEmail: email })
+        .sort(sortOption)
         .toArray();
-      
+
       res.send(result);
     });
 
-
+    //filter by price
+    app.get("/filter_price", async (req, res) => {
+      const { maxPrice, minPrice } = req.query;
+      console.log(minPrice, parseInt(maxPrice));
+      const result = await toysCollection
+        .find({
+          price: { $gte: parseFloat(minPrice), $lte: parseFloat(maxPrice) },
+        })
+        .sort({ price: 1 })
+        .toArray();
+      res.send(result);
+    });
 
     //count toydata
-
-    app.get('/total', async (req, res) => {
+    app.get("/total", async (req, res) => {
       const count = await toysCollection.estimatedDocumentCount();
-      res.send({ total: count })
-    })
+      res.send({ total: count });
+    });
 
     //pagination
-
     app.get("/page", async (req, res) => {
       const pageNumber = parseInt(req.query.page) || 1;
       const pageSize = 20;
